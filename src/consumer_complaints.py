@@ -89,7 +89,7 @@ if __name__ == '__main__':
     params = {
         'date_format': '%Y-%m-%d',
         'buff_size': 300,
-        'sort': False,
+        'sort': (0, 1),
         'log': 'skip',
         'input': sys.argv[-2],
         'output': sys.argv[-1]
