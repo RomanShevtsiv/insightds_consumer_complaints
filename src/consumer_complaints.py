@@ -3,8 +3,14 @@ import csv
 import sys
 import os
 import logging
+import argparse
 from operator import itemgetter
 from datetime import datetime as dt
+
+
+def str2tup(s):
+    return tuple([int(e) for e in s])
+
 
 class Df:
     def __init__(self, date_format='%Y-%m-%d', buff_size=300, columns=('Product', 'Date received', 'Company')):
@@ -19,6 +25,7 @@ class Df:
         with open(file, 'r') as f:
             headers = next(csv.reader([f.readline()]))
             positions = [headers.index(c) for c in self.columns]
+            # at least 3 predefined columns are needed to conduct further analysis
             if len(positions) < 3:
                 # "Not all required columns were found
                 logger.critical("1: E0001")
@@ -42,8 +49,6 @@ class Df:
                         logger.warning(f"{i}: E0101")
                     i += 1
                 lines = f.readlines(self.buff_size)
-                # print('Chunk done')
-
 
     def add(self, line):
         k, c = (line[0].lower(), dt.strptime(line[1], self.date_format).year), line[2].lower()
@@ -64,7 +69,7 @@ class Df:
     def cmp_max(self, k):
         return max(self.data[k].items(), key=itemgetter(1))[1]
 
-    def save(self, file, sort=False):
+    def save(self, file, sort=(0, 1)):
         with open(file, 'w', newline='') as f:
             writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             if sort:
@@ -72,58 +77,43 @@ class Df:
             else:
                 keys = self.data.keys()
             if sort:
-                sort = (sort[0], 1-sort[0])
+                sort = (sort[0], 1 - sort[0])
             else:
-                sort = (0,1)
+                sort = (0, 1)
             for k in keys:
                 cpl = self.cpl_count(k)
-                writer.writerow([k[sort[0]], k[sort[1]], cpl, self.cmp_count(k), round(self.cmp_max(k)/cpl*100)])
+                writer.writerow([k[sort[0]], k[sort[1]], cpl, self.cmp_count(k), round(self.cmp_max(k) / cpl * 100)])
 
 
 if __name__ == '__main__':
 
-    if len(sys.argv) < 3:
-        # Not enough arguments
-        sys.exit("Not enough arguments, at least two required.")
+    parser = argparse.ArgumentParser(description='Processes complaints by products, years and companies and generates '
+                                                 'aggregate statistics.')
+    parser.add_argument('input', type=str, help='path to the file with the data to process')
+    parser.add_argument('output', type=str, help='path to the file where the results of analysis will be stored')
+    parser.add_argument('--buff_size', type=int, default=1024000,
+                        help='read input file by chunks of BUFF_SIZE bytes')
+    parser.add_argument('--date_format', type=str, default='%Y-%m-%d',
+                        help='format to pasrse date of complaint (see datetime.strptime for details)')
+    parser.add_argument('--log', type=str, default='skip', choices=['skip', 'console', 'file'],
+                        help='determines how to log warnings')
+    parser.add_argument('--sort', type=str2tup, default=(0, 1), choices=[(0,), (1,), (0, 1), (1, 0)],
+                        help='determines sort oder and order of columns in the output file:'
+                             '0 - sort by product in alphabetical order;'
+                             '1 - sort by year in ascending order, output year column first;'
+                             '01 - sort by product in alphabetical order then by year in ascending order;'
+                             '10 - sort by year in ascending order then by product in alphabetical order, output year '
+                             'column first.')
+    args = parser.parse_args()
 
-    params = {
-        'date_format': '%Y-%m-%d',
-        'buff_size': 300,
-        'sort': (0, 1),
-        'log': 'skip',
-        'input': sys.argv[-2],
-        'output': sys.argv[-1]
-    }
-
-    if not os.path.isfile(params['input']):
-        # Input file doesn't exist
-        sys.exit("Input file with data doesn't exist.")
-
-    i = 1
-    while i < len(sys.argv)-2:
-        if sys.argv[i] == '-date_format':
-            params['date_format'] = sys.argv[i+1]
-            i += 2
-        if sys.argv[i] == '-log':
-            params['log'] = sys.argv[i+1]
-            i += 2
-        elif sys.argv[i] == '-buff_size':
-            params['buff_size'] = int(sys.argv[i + 1])
-            i += 2
-        elif sys.argv[i] == '-sort':
-            params['sort'] = tuple([int(l) for l in sys.argv[i + 1]])
-            i += 2
-        else:
-            i += 1
-
-    if params['log'] == 'file':
-        logging.basicConfig(filename=os.path.join(os.path.dirname(params['input']), 'parse_errors.log'),
+    if args.log == 'file':
+        logging.basicConfig(filename=os.path.join(os.path.dirname(args.input), 'parse_errors.log'),
                             format='%(message)s', filemode='w')
-    elif params['log'] == 'skip':
+    elif args.log == 'skip':
         logging.basicConfig(level=logging.CRITICAL)
 
-    data = Df(params['date_format'], params['buff_size'])
-    data.read(params['input'])
-    data.save(params['output'], params['sort'])
+    data = Df(args.date_format, args.buff_size)
+    data.read(args.input)
+    data.save(args.output, args.sort)
 
     print("Done!")
