@@ -17,7 +17,7 @@ Python script will do some magic for you.
 
 ## Usage
 
-Just follow these simple steps to process you data and ge the expected results: 
+Just follow these simple steps to process you data and get the expected results: 
 * put your data as `./input/complaints.csv` file;
 * run `run.sh` script in your shell;
 * inspect the results in `./output/report.csv` file.
@@ -26,7 +26,7 @@ Just follow these simple steps to process you data and ge the expected results:
 even run the adjusted command directly in you terminal.*  
 
 ### Command line arguments
-You can get help by specifying `-h` key to the `consumer_complaints.py`:
+You can get help by specifying `-h` key to the `consumer_complaints.py` script:
 
 <code>~ % python ./src/consumer_complaints.py -h</code>
 
@@ -42,7 +42,7 @@ and 100 MB should be fine);
 * `--log`: determines how to log warnings
      * **skip** - will silently skip noncritical issues;
      * **console** - will output to the console all detected issues;
-     * **file** - will write all detected issues to the file parse_errors.log.
+     * **file** - will write all detected issues to the file *parse_errors.log*.
 
 *You can find defaults in the console help.*
 
@@ -50,7 +50,7 @@ and 100 MB should be fine);
 
 1. One can change the order of columns in the input file.
 2. Some columns can be missing or empty, the script will only require `Product`, `Date received` and `Company` columns 
-to be present and non empty.
+to be present.
 
 ### Warnings and Issues
 
