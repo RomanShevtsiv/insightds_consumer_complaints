@@ -61,11 +61,11 @@ What can go wrong?
 4. Script will skip line if the date of complaint value can't be converted using specified format.
 5. Script will treat empty value in the product field as separate product type.
 6. Script will treat empty value in the company field as separate company name.
-7. Script not try to guess the correct order of values in some line if they are shuffled.
-8. Script not try to guess if required values are available in some line if the number of values for that line doesn't 
+7. Script will not try to guess the correct order of values in a line if they are shuffled.
+8. Script will not try to guess if required values are available in a line if the number of values for that line doesn't 
 match the number of headers.
 
-All issue are displayed or written to the file in the format `<line number>: <code>`, you can find codes description 
+All issues are displayed or written to a file in the following format `<line number>: <code>`, you can find codes description 
 below.
 
 Warning codes:
